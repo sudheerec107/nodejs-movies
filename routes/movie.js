@@ -2,6 +2,52 @@ const router = require('express').Router();
 const Movie = require('../models/movie');
 const auth = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
+const writelog = require('writelog');
+
+router.get('/search', auth, (req, res) => {
+    try {
+    const searchText = req.query.title;
+    Movie.find({ "title": { "$regex": searchText, "$options": "i" } },
+        (err, movies) => {
+            if (!err) {
+                res.json(movies);
+            } else {
+                writelog('error', err);
+                req.status(400).json({msg: 'Unable to search'})
+            }
+        });
+    } catch (error) {
+        writelog('catch error', error);
+        res.status(500).json({ msg: 'Internal server Error' });
+    }
+});
+
+// just to show we can use group as well not used in UI
+router.get('/group', auth, (req, res) => {
+    try {
+    Movie.aggregate([
+        {
+        $group:  {
+        _id: { 
+                    "group": "$category", 
+                    "title": "$title" 
+                }
+            }
+        }
+            ], (error, movies) => {
+                if (!error) {
+                    res.json(movies);
+                } else {
+                    writelog('error', error);
+                    req.status(400).json({msg: 'Unable to find movies'})
+                }
+            });
+
+    } catch (error) {
+        writelog('catch error', error);
+        res.status(500).json({ msg: 'Internal server Error' });
+    }
+});
 
 router.post('/', auth,
     [
@@ -16,6 +62,7 @@ router.post('/', auth,
         try {
             const error = validationResult(req);
             if (!error.isEmpty()) {
+                writelog('error', error.errors);
                 res.status(500).json({ msg: `Invalid ${error.errors[0].param} input` })
             } else {
                 const newMovie = new Movie({
@@ -26,6 +73,7 @@ router.post('/', auth,
             }
 
         } catch (error) {
+            writelog('catch error', error);
             res.status(500).json({ msg: 'Internal server Error' });
         }
     });
@@ -42,6 +90,7 @@ router.put('/:id', auth,
         try {
             const error = validationResult(req)
             if (!error.isEmpty()) {
+                writelog('error', error.errors);
                 res.status(500).json({ msg: `Invalid ${error.errors[0].param} input` })
             } else {
                 var movie = await Movie.findById(req.params.id).exec();
@@ -50,6 +99,7 @@ router.put('/:id', auth,
                 res.send(result);
             }
         } catch (error) {
+            writelog('catch error', error);
             res.status(500).json({ msg: 'Internal server Error' });
         }
     });
@@ -60,6 +110,7 @@ router.get('/', auth,
             const movies = await Movie.find();
             res.json(movies);
         } catch (error) {
+            writelog('catch error', error);
             res.status(500).json({ msg: 'Internal server Error' });
         }
     });
@@ -75,6 +126,7 @@ router.get('/:id', auth,
                 }
             });
         } catch (error) {
+            writelog('catch error', error);
             res.status(500).json({ msg: 'Internal server Error' });
         }
     });
