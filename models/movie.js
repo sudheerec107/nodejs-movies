@@ -7,7 +7,8 @@ const movieSchema = new mongoose.Schema({
         unique: true
     },
     rating: {
-        type: Number
+        type: Number,
+        required: true
     },
     year: {
         type: Number,

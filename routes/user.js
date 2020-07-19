@@ -64,13 +64,13 @@ router.post('/login', async (req, res) => {
         }
         const user = await User.findOne({ email: email });
         if (!user) {
-            return res.status(400).json({ msg: 'Invalid password' });
+            return res.status(400).json({ msg: 'Invalid password or email' });
         } else {
             bcrypt.compare(password, user.password, (err, result) => {
                 if (err || !result) {
-                    return res.status(400).json({ msg: 'Invalid password' });
+                    return res.status(400).json({ msg: 'Invalid password or email' });
                 } else {
-                    let token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { algorithm: 'HS256' });
+                    let token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { algorithm: 'HS256', expiresIn: '1d' });
                     return res.json({ token, user: { email: user.email, displayName: user.displayName } });
                 }
             });

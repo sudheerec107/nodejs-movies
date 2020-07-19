@@ -7,11 +7,12 @@ router.post('/', auth,
     [
         body('title').notEmpty(),
         body('year').notEmpty(),
+        body('rating').notEmpty(),
         body('director').notEmpty(),
         body('description').notEmpty(),
         body('cast').isLength({ min: 1 })
     ],
-    async(req, res) => {
+    async (req, res) => {
         try {
             const error = validationResult(req);
             if (!error.isEmpty()) {
@@ -58,6 +59,21 @@ router.get('/', auth,
         try {
             const movies = await Movie.find();
             res.json(movies);
+        } catch (error) {
+            res.status(500).json({ msg: 'Internal server Error' });
+        }
+    });
+
+router.get('/:id', auth,
+    async (req, res) => {
+        try {
+            Movie.findById(req.params.id, (error, movie) => {
+                if (!error) {
+                    res.json(movie);
+                } else {
+                    res.status(400).json({ msg: 'Invalid input' });
+                }
+            });
         } catch (error) {
             res.status(500).json({ msg: 'Internal server Error' });
         }
