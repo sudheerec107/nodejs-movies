@@ -24,7 +24,7 @@ const userRouter = require('./routes/user');
 const movieRouter = require('./routes/movie');
 app.use('/api/users', userRouter);
 app.use('/api/movies', movieRouter);
-app.use('/',  express.static(__dirname + '/public'));
+app.use('/', express.static(__dirname + '/public'));
 
 app.listen(PORT, (err) => {
     if (!err) {
