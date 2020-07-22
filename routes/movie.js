@@ -11,7 +11,7 @@ router.get('/group', auth, (req, res) => {
         {
             $group: {
                 _id: {
-                    "$group": "$category",
+                    "group": "$category",
                     "title": "$title"
                 }
             }
